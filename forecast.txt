@@ -1,0 +1,212 @@
+
+R version 3.4.2 (2017-09-28) -- "Short Summer"
+Copyright (C) 2017 The R Foundation for Statistical Computing
+Platform: i386-w64-mingw32/i386 (32-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+[Previously saved workspace restored]
+
+> series <- scan("value.dat")
+Read 36 items
+> series
+ [1] 46 48 44 45 44 45 43 42 41 43 46 44 44 41 41 39 42 40 38 38 39 41 41 40 41
+[26] 41 39 35 38 34 33 37 36 33 37 40
+> timeseries <- ts(series)
+> timeseries
+Time Series:
+Start = 1 
+End = 36 
+Frequency = 1 
+ [1] 46 48 44 45 44 45 43 42 41 43 46 44 44 41 41 39 42 40 38 38 39 41 41 40 41
+[26] 41 39 35 38 34 33 37 36 33 37 40
+> timeseries<- ts(series, frequency=12, start=c(2014,1))
+> timeseries
+     Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec
+2014  46  48  44  45  44  45  43  42  41  43  46  44
+2015  44  41  41  39  42  40  38  38  39  41  41  40
+2016  41  41  39  35  38  34  33  37  36  33  37  40
+> plot.ts(timeseries) #график исходного временного р€да
+> 
+> install.packages("TTR", repos="http://R-Forge.R-project.org")
+Installing package into СC:/Users/asusasus/Documents/R/win-library/3.4Т
+(as СlibТ is unspecified)
+Warning message:
+package СTTRТ is not available (for R version 3.4.2) 
+> timeseriesSMA2 <- SMA(timeseries,n=2)
+Error in SMA(timeseries, n = 2) : could not find function "SMA"
+> plot.ts(timeseriesSMA2) 
+> 
+> library("TTR")
+> timeseriesSMA2 <- SMA(timeseries,n=2) #средний пор€док=2
+> plot.ts(timeseriesSMA2)
+> 
+> timeseriesSMA8 <- SMA(timeseries,n=8) #средний пор€док=8
+> plot.ts(timeseriesSMA8)
+> 
+> timeseriescomponents <- decompose(timeseriesSMA2)
+> timeseriescomponents$seasonal # get the estimated values of the seasonal component
+            Jan        Feb        Mar        Apr        May        Jun
+2014  1.7942708  1.6692708  0.6796875 -1.0598958 -0.7057292 -0.3723958
+2015  1.7942708  1.6692708  0.6796875 -1.0598958 -0.7057292 -0.3723958
+2016  1.7942708  1.6692708  0.6796875 -1.0598958 -0.7057292 -0.3723958
+            Jul        Aug        Sep        Oct        Nov        Dec
+2014 -1.3411458 -1.7994792 -1.7994792 -0.5182292  1.5546875  1.8984375
+2015 -1.3411458 -1.7994792 -1.7994792 -0.5182292  1.5546875  1.8984375
+2016 -1.3411458 -1.7994792 -1.7994792 -0.5182292  1.5546875  1.8984375
+> 
+> plot(timeseriescomponents)
+> 
+> 
+> #исключим сезонную компоненту
+> 
+> timeseriescomponentsjasted <- timeseriesSMA2-timeseriescomponents$seasonal #timeseriescomponents-timeseriescomponents$seasonal
+> plot(timeseriescomponentsjasted) #удалили сезонную компоненту
+> 
+> 
+> #автокоррел€ци€
+> ACFtimeseriesSMA2withoutSeasons <- timeseriescomponentsjasted[-1] #Ёто мы NA удалили из первой строки сглаженного р€да(без сезонности)
+> str(ACFtimeseriesSMA2withoutSeasons)
+ num [1:35] 45.3 45.3 45.6 45.2 44.9 ...
+> (acf(ACFtimeseriesSMA2withoutSeasons, main=""))
+
+Autocorrelations of series СACFtimeseriesSMA2withoutSeasonsТ, by lag
+
+     0      1      2      3      4      5      6      7      8      9     10 
+ 1.000  0.887  0.736  0.666  0.628  0.547  0.427  0.319  0.235  0.190  0.154 
+    11     12     13     14     15 
+ 0.097  0.020 -0.030 -0.039 -0.059 
+> 
+> 
+> 
+> #регресси€
+> month<- scan("month.dat")
+Read 36 items
+> prog <- lm(series ~ month)
+> summary(prog)
+
+Call:
+lm(formula = series ~ month)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-7.3990 -2.3763  0.2298  2.5783  6.6313 
+
+Coefficients:
+            Estimate Std. Error t value Pr(>|t|)    
+(Intercept)  42.2020     1.2963  32.555   <2e-16 ***
+month        -0.2576     0.1761  -1.462    0.153    
+---
+Signif. codes:  0 С***Т 0.001 С**Т 0.01 С*Т 0.05 С.Т 0.1 С Т 1
+
+Residual standard error: 3.648 on 34 degrees of freedom
+Multiple R-squared:  0.05918,   Adjusted R-squared:  0.0315 
+F-statistic: 2.139 on 1 and 34 DF,  p-value: 0.1528
+
+> 
+> #в этом случае есть s1 s2
+> timeseriesSMA2[1]<-46
+> timeseriesSMA2
+      Jan  Feb  Mar  Apr  May  Jun  Jul  Aug  Sep  Oct  Nov  Dec
+2014 46.0 47.0 46.0 44.5 44.5 44.5 44.0 42.5 41.5 42.0 44.5 45.0
+2015 44.0 42.5 41.0 40.0 40.5 41.0 39.0 38.0 38.5 40.0 41.0 40.5
+2016 40.5 41.0 40.0 37.0 36.5 36.0 33.5 35.0 36.5 34.5 35.0 38.5
+> timeseriesforecasts <- HoltWinters(timeseriesSMA2, seasonal = "additive", l.start = 36)
+> timeseriesforecasts
+Holt-Winters exponential smoothing with trend and additive seasonal component.
+
+Call:
+HoltWinters(x = timeseriesSMA2, seasonal = "additive", l.start = 36)
+
+Smoothing parameters:
+ alpha: 0.9138041
+ beta : 0
+ gamma: 1
+
+Coefficients:
+          [,1]
+a   35.8560856
+b   -0.3298368
+s1   2.4369118
+s2   1.0025512
+s3  -0.3696026
+s4  -1.3784295
+s5  -0.5847680
+s6   0.2368387
+s7  -0.4664358
+s8  -1.1817705
+s9  -1.7159349
+s10 -1.2775704
+s11  1.3874169
+s12  2.6439144
+> timeseriesforecasts$SSE
+[1] 97.01296
+> 
+> install.packages("forecast", repos="http://R-Forge.R-project.org")
+Installing package into СC:/Users/asusasus/Documents/R/win-library/3.4Т
+(as СlibТ is unspecified)
+Warning message:
+package СforecastТ is not available (for R version 3.4.2) 
+> library("forecast")
+> timeseriesforecasts2 <- forecast(timeseriesforecasts, h=12)
+> timeseriesforecasts2
+         Point Forecast    Lo 80    Hi 80    Lo 95    Hi 95
+Jan 2017       37.96316 35.37236 40.55396 34.00088 41.92544
+Feb 2017       36.19896 32.68938 39.70855 30.83152 41.56641
+Mar 2017       34.49697 30.26352 38.73043 28.02246 40.97149
+Apr 2017       33.15831 28.30783 38.00878 25.74015 40.57647
+May 2017       33.62213 28.22472 39.01955 25.36750 41.87677
+Jun 2017       34.11390 28.22009 40.00772 25.10009 43.12771
+Jul 2017       33.08079 26.72926 39.43233 23.36696 42.79463
+Aug 2017       32.03562 25.25720 38.81404 21.66892 42.40232
+Sep 2017       31.17162 23.99165 38.35159 20.19081 42.15243
+Oct 2017       31.28015 23.71993 38.84037 19.71779 42.84250
+Nov 2017       33.61530 25.69306 41.53754 21.49928 45.73132
+Dec 2017       34.54196 26.27353 42.81038 21.89650 47.18742
+> 
+> #сглаженный р€д исх+ прогноз - все в одной таблице
+> timeseriesSMA2with2017 <- ts(c(timeseriesSMA2,38,37,35,34,34,35,34,33,32,32,34,35), start = 2014,frequency = 12)
+> timeseriesSMA2with2017
+      Jan  Feb  Mar  Apr  May  Jun  Jul  Aug  Sep  Oct  Nov  Dec
+2014 46.0 47.0 46.0 44.5 44.5 44.5 44.0 42.5 41.5 42.0 44.5 45.0
+2015 44.0 42.5 41.0 40.0 40.5 41.0 39.0 38.0 38.5 40.0 41.0 40.5
+2016 40.5 41.0 40.0 37.0 36.5 36.0 33.5 35.0 36.5 34.5 35.0 38.5
+2017 38.0 37.0 35.0 34.0 34.0 35.0 34.0 33.0 32.0 32.0 34.0 35.0
+> 
+> plot(timeseriesSMA2)
+> plot(timeseriesSMA2with2017)
+> 
+> 
+> 
+> # ¬ычисление параметров уравнени€ регрессии »—’ќƒЌќ√ќ сглаж –яƒј:
+> y<-timeseriesSMA2
+> x<-scan("x.txt",dec=",")
+Read 35 items
+> x<- as.numeric(x)
+> x<-c(x,36)
+> lm<-lm(formula = y~x)
+> coefficients<-lm$coefficients
+> coefficients
+(Intercept)           x 
+ 46.3134921  -0.3082368 
+> 
+> 
+> xNew<-c(x,37,38,39,40,41,42,43,44,45,46,47,48)
+> # ¬ычисление параметров уравнени€ регрессии ƒќѕќЋЌ≈ЌЌџ… –яƒ:
+> ynew<-timeseriesSMA2with2017
+> lmNew<-lm(formula = ynew~xNew)
+> coefficientsNew<-lmNew$coefficients
+> coefficientsNew
+(Intercept)        xNew 
+ 45.9321809  -0.2803951 
+> 
